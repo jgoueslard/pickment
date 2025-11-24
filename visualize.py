@@ -69,3 +69,53 @@ def plot_before_after(img_reference, img_before, img_after):
 
     plt.tight_layout()
     plt.show()
+
+def plot_vectorscope(img):
+    # small resize
+    h, w = img.shape[:2]
+    scale = 512 / max(h, w)
+    img_s = cv2.resize(img, dsize=(int(w*scale), int(h*scale)), interpolation=cv2.INTER_AREA)
+
+    # convert to YCbCr to extract any Y (luminance) information
+    img_YCbCr = cv2.cvtColor(img_s, cv2.COLOR_BGR2YCR_CB)
+
+    # extract chrominance info (Cb and Cr)
+    Cb = img_YCbCr[:, :, 2].astype(float)
+    Cr = img_YCbCr[:, :, 1].astype(float)
+
+    # center values on a -1, +1 line for later visualization (unit circle)
+    Cb = Cb / 255.0 * 2 - 1
+    Cr = Cr / 255.0 * 2 - 1
+
+    # flatten for plotting
+    cb_flat = Cb.flatten()
+    cr_flat = Cr.flatten()
+
+    # get rgb values
+    img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
+
+    # convert to polar coordinates
+    r = np.sqrt(cb_flat**2 + cr_flat**2)
+    theta = np.atan2(cb_flat , cr_flat)
+
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(projection='polar'))
+
+
+    scatter = ax.scatter(theta, r, c=img_rgb,
+                     cmap='hsv', s=1, alpha=0.5)
+    
+    color_points = {
+        "B": (np.atan2(0.88, -0.14), 1),
+        "Mg": (np.atan2(0.58, 0.74), 1),
+        "R": (np.atan2(-0.29, 0.88), 1),
+        "Yl": (np.atan2(-0.87, 0.15), 1),
+        "G": (np.atan2(-0.58, -0.73), 1),
+        "Cy": (np.atan2(0.30, -0.87), 1)
+        }
+    
+    for color, (u, v) in color_points.items():
+            ax.plot(u, v, 'o', color='black')
+            ax.text(u, v, f" {color}", fontsize=10, color='blue')
+
+    plt.plot()
+    plt.show()
