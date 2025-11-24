@@ -207,9 +207,6 @@ def color_transfer_lab(src, ref):
 
 
 #################################################################
-import cv2 as cv
-import numpy as np
-
 
 def soft_band_weight(L, a, b, feather=12):
     """

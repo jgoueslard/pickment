@@ -4,8 +4,8 @@ import numpy as np
 def match_statistics(img_in, img_ref, color_space="LAB"):
     # convert to proper colorspace
     if color_space == "LAB":
-        lab_in = cv2.cvtColor(img_in, cv2.COLOR_BGR2LAB)
-        lab_ref = cv2.cvtColor(img_ref, cv2.COLOR_BGR2LAB)
+        lab_in = cv2.cvtColor(img_in, cv2.COLOR_RGB2LAB)
+        lab_ref = cv2.cvtColor(img_ref, cv2.COLOR_RGB2LAB)
     else:
         raise "Unsupported color space error"
     
@@ -51,5 +51,5 @@ def match_statistics(img_in, img_ref, color_space="LAB"):
             # beta
             lab_out[y, x, 2] = b_val
 
-    img_out = cv2.cvtColor(lab_out, cv2.COLOR_LAB2BGR)
+    img_out = cv2.cvtColor(lab_out, cv2.COLOR_LAB2RGB)
     return img_out
