@@ -14,12 +14,12 @@ from color_transfer_reinhart import *
 #to CIE XYZ tristimulus values
 # XYZ = colour.sRGB_to_XYZ(RGB)
 
-#BGR = cv2.imread("img/decision-to-leave.jpg")
-
+BGR = cv2.imread("img/licorice-pizza-src.jpg")
 # colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
 
 ### VISUALIZE
 # plot_color_palette(BGR)
+plot_vectorscope(BGR)
 
 
 
@@ -46,3 +46,5 @@ plot_before_after(img_ref_rgb, img_src_rgb, img_out_rgb)
 #show_histograms(img_ref_rgb, img_src_rgb, img_out_rgb)
 
 #show_parades(img_ref_rgb, img_src_rgb, img_out_rgb)
+
+plot_vectorscope(img_ref_rgb)
