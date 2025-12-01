@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 # set colour style for matplotlib
 colour.plotting.colour_style()
 
+from util import *
+
 def plot_color_palette(img, n_colors=8, swatch_h=80):
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # small resize
-        h, w = img_rgb.shape[:2]
-        scale = 512 / max(h, w)
-        img_s = cv2.resize(img_rgb, dsize=(int(w*scale), int(h*scale)), interpolation=cv2.INTER_AREA)
+        img_s = downscale_img(img, 512)
 
         img_s_flat = img_s.reshape(img_s.shape[0] * img_s.shape[1], 3).astype(np.float32)
 
@@ -221,9 +221,7 @@ def show_parades(img_reference, img_before, img_after) :
     plt.show()
 def plot_vectorscope(img):
     # small resize
-    h, w = img.shape[:2]
-    scale = 512 / max(h, w)
-    img_s = cv2.resize(img, dsize=(int(w*scale), int(h*scale)), interpolation=cv2.INTER_AREA)
+    img_s = downscale_img(img, 512)
 
     # convert to YCbCr to extract any Y (luminance) information
     img_YCbCr = cv2.cvtColor(img_s, cv2.COLOR_BGR2YCR_CB)
@@ -268,3 +266,9 @@ def plot_vectorscope(img):
 
     plt.plot()
     plt.show()
+
+def plot_3D_RGB_scatter(img):
+    img_s = downscale_img(img, 256)
+
+    img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
+    colour.plotting.plot_RGB_scatter(img_rgb, "ITU-R BT.709")
