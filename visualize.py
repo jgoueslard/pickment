@@ -272,3 +272,34 @@ def plot_3D_RGB_scatter(img):
 
     img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
     colour.plotting.plot_RGB_scatter(img_rgb, "ITU-R BT.709")
+
+def plot_transfer_curves(H_in_cdf, H_ref_cdf, transfer_function,
+                         figsize=(10, 6), title_prefix=""):
+    x = np.arange(256)
+
+    fig, axs = plt.subplots(1, 2, figsize=figsize, sharey=False)
+
+    # plot the 2 cdf
+    axs[0].plot(x, H_in_cdf,  color='tab:red',   label='Source CDF')
+    axs[0].plot(x, H_ref_cdf, color='tab:blue',  label='Reference CDF')
+    axs[0].set_title(f"{title_prefix}CDFs")
+    axs[0].set_xlabel('L value (0-255)')
+    axs[0].set_ylabel('Cumulative probability')
+    axs[0].set_xlim(0, 255)
+    axs[0].set_ylim(0, 1)
+    axs[0].grid(True, ls='--', alpha=0.4)
+    axs[0].legend()
+
+    # plot transfer function
+    axs[1].plot(x, transfer_function, color='tab:green', label='Transfer Function')
+    axs[1].plot(x, x, color='tab:orange', label='Identity')
+    axs[1].set_title(f"{title_prefix}Transfer function (LUT)")
+    axs[1].set_xlabel('Input L value')
+    axs[1].set_ylabel('Output L value')
+    axs[1].set_xlim(0, 255)
+    axs[1].set_ylim(0, 255)
+    axs[1].grid(True, ls='--', alpha=0.4)
+    axs[1].legend()
+
+    plt.tight_layout()
+    plt.show()
