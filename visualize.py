@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 # set colour style for matplotlib
 colour.plotting.colour_style()
 
+from util import *
+
 def plot_color_palette(img, n_colors=8, swatch_h=80):
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # small resize
-        h, w = img_rgb.shape[:2]
-        scale = 512 / max(h, w)
-        img_s = cv2.resize(img_rgb, dsize=(int(w*scale), int(h*scale)), interpolation=cv2.INTER_AREA)
+        img_s = downscale_img(img, 512)
 
         img_s_flat = img_s.reshape(img_s.shape[0] * img_s.shape[1], 3).astype(np.float32)
 
@@ -218,4 +218,88 @@ def show_parades(img_reference, img_before, img_after) :
     axs[2].set_title("output")
     axs[2].axis('off')
     
+    plt.show()
+def plot_vectorscope(img):
+    # small resize
+    img_s = downscale_img(img, 512)
+
+    # convert to YCbCr to extract any Y (luminance) information
+    img_YCbCr = cv2.cvtColor(img_s, cv2.COLOR_BGR2YCR_CB)
+
+    # extract chrominance info (Cb and Cr)
+    Cb = img_YCbCr[:, :, 2].astype(float)
+    Cr = img_YCbCr[:, :, 1].astype(float)
+
+    # center values on a -1, +1 line for later visualization (unit circle)
+    Cb = Cb / 255.0 * 2 - 1
+    Cr = Cr / 255.0 * 2 - 1
+
+    # flatten for plotting
+    cb_flat = Cb.flatten()
+    cr_flat = Cr.flatten()
+
+    # get rgb values
+    img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
+
+    # convert to polar coordinates
+    r = np.sqrt(cb_flat**2 + cr_flat**2)
+    theta = np.atan2(cb_flat , cr_flat)
+
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(projection='polar'))
+
+
+    scatter = ax.scatter(theta, r, c=img_rgb,
+                     cmap='hsv', s=1, alpha=0.5)
+    
+    color_points = {
+        "B": (np.atan2(0.88, -0.14), 1),
+        "Mg": (np.atan2(0.58, 0.74), 1),
+        "R": (np.atan2(-0.29, 0.88), 1),
+        "Yl": (np.atan2(-0.87, 0.15), 1),
+        "G": (np.atan2(-0.58, -0.73), 1),
+        "Cy": (np.atan2(0.30, -0.87), 1)
+        }
+    
+    for color, (u, v) in color_points.items():
+            ax.plot(u, v, 'o', color='black')
+            ax.text(u, v, f" {color}", fontsize=10, color='blue')
+
+    plt.plot()
+    plt.show()
+
+def plot_3D_RGB_scatter(img):
+    img_s = downscale_img(img, 256)
+
+    img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
+    colour.plotting.plot_RGB_scatter(img_rgb, "ITU-R BT.709")
+
+def plot_transfer_curves(H_in_cdf, H_ref_cdf, transfer_function,
+                         figsize=(10, 6), title_prefix=""):
+    x = np.arange(256)
+
+    fig, axs = plt.subplots(1, 2, figsize=figsize, sharey=False)
+
+    # plot the 2 cdf
+    axs[0].plot(x, H_in_cdf,  color='tab:red',   label='Source CDF')
+    axs[0].plot(x, H_ref_cdf, color='tab:blue',  label='Reference CDF')
+    axs[0].set_title(f"{title_prefix}CDFs")
+    axs[0].set_xlabel('L value (0-255)')
+    axs[0].set_ylabel('Cumulative probability')
+    axs[0].set_xlim(0, 255)
+    axs[0].set_ylim(0, 1)
+    axs[0].grid(True, ls='--', alpha=0.4)
+    axs[0].legend()
+
+    # plot transfer function
+    axs[1].plot(x, transfer_function, color='tab:green', label='Transfer Function')
+    axs[1].plot(x, x, color='tab:orange', label='Identity')
+    axs[1].set_title(f"{title_prefix}Transfer function (LUT)")
+    axs[1].set_xlabel('Input L value')
+    axs[1].set_ylabel('Output L value')
+    axs[1].set_xlim(0, 255)
+    axs[1].set_ylim(0, 255)
+    axs[1].grid(True, ls='--', alpha=0.4)
+    axs[1].legend()
+
+    plt.tight_layout()
     plt.show()

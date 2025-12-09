@@ -15,12 +15,13 @@ from lut_generation import *
 #to CIE XYZ tristimulus values
 # XYZ = colour.sRGB_to_XYZ(RGB)
 
-#BGR = cv2.imread("img/decision-to-leave.jpg")
-
+BGR = cv2.imread("img/licorice-pizza-src.jpg")
 # colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
 
 ### VISUALIZE
-# plot_color_palette(BGR)
+plot_color_palette(BGR)
+# plot_vectorscope(BGR)
+# plot_3D_RGB_scatter(BGR)
 
 
 
@@ -45,10 +46,14 @@ img_src_rgb = cv2.cvtColor(img_src_bgr, cv2.COLOR_BGR2RGB)
 
 img_out_rgb = iterative_pdf_transfer(img_ref_rgb, img_src_rgb, n_iterations=10)
 
-plot_before_after(img_ref_rgb, img_src_rgb, img_out_rgb)
+# plot_before_after(img_ref_rgb, img_src_rgb, img_out_rgb)
 
-#show_histograms(img_ref_rgb, img_src_rgb, img_out_rgb)
+# show_histograms(img_ref_rgb, img_src_rgb, img_out_rgb)
 
+<<<<<<< HEAD
 #show_parades(img_ref_rgb, img_src_rgb, img_out_rgb)
 
 #generate_lut(img_src_rgb, img_out_rgb, path="lut/ame3.cube")
+=======
+# show_parades(img_ref_rgb, img_src_rgb, img_out_rgb)
+>>>>>>> 83f49b8fa01b96ec8b30c216000ba6b12251e853
