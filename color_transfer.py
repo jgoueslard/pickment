@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 import scipy.ndimage as ndimage
+from util import *
+from visualize import plot_transfer_curves
 
-def match_statistics(img_in, img_ref, color_space="LAB"):
+def match_lab_statistics(img_in, img_ref, color_space="LAB"):
     # convert to proper colorspace
     if color_space == "LAB":
         lab_in = cv2.cvtColor(img_in, cv2.COLOR_RGB2LAB)
@@ -55,7 +57,7 @@ def match_statistics(img_in, img_ref, color_space="LAB"):
     img_out = cv2.cvtColor(lab_out, cv2.COLOR_LAB2RGB)
     return img_out
 
-def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, color_space="LAB"):
+def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, color_space="LAB", draw_transfer=False):
     # work in LAB using D65 illuminant
 
     # 1st: transfer luminance -> smooth remapping curve
@@ -108,10 +110,10 @@ def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overla
     # smooth transfer function
     sigma = 256 * smooth_luminance_transfer
     
-    # Apply Gaussian filter
+    # apply Gaussian filter
     transfer_function_smooth = ndimage.gaussian_filter1d(transfer_function.astype(np.float32), sigma=sigma)
     
-    # Clip back to [0, 255]
+    # safe clip back to [0, 255]
     transfer_function_smooth = np.clip(transfer_function_smooth, 0, 255).astype(np.uint8)
     L_matched = cv2.LUT(L_in, transfer_function_smooth)
 
@@ -178,5 +180,98 @@ def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overla
     
     # Convert back to RGB
     img_out = cv2.cvtColor(lab_matched.astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+    if draw_transfer:
+        plot_transfer_curves(H_in_cdf, H_ref_cdf, transfer_function)
+
+    return img_out
+
+
+def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer_luminance=False):
+    """
+    Docstring for correct_skin_tones
     
-    return img_out, H_in_cdf, H_ref_cdf, transfer_function
+    :param img_in: Input RGB cv2 Image
+    :param img_ref: Reference RGB cv2 Image
+    :param mask_in: Mask from Input Image
+    :param mask_ref: Mask from Reference Image
+    :param img_out: Image on which to write (matching input dimensions)
+    """
+    # convert to LAB
+    lab_in = cv2.cvtColor(img_in, cv2.COLOR_RGB2LAB).astype(np.float32)
+    lab_ref = cv2.cvtColor(img_ref, cv2.COLOR_RGB2LAB).astype(np.float32)
+
+    # matte
+    mask_in_bool = mask_in == 255
+    mask_ref_bool = mask_ref == 255
+    
+    # Extract skin pixels only (now the shape is (X, 3))
+    lab_in_masked = lab_in[mask_in_bool]
+    lab_ref_masked = lab_ref[mask_ref_bool]
+    
+    # transfer statistics (TODO ONLY AB ?)
+    in_mean = lab_in_masked.mean(axis=0)
+    in_std = lab_in_masked.std(axis=0)
+    in_std = np.where(in_std == 0, 1, in_std)
+    
+    ref_mean = lab_ref_masked.mean(axis=0)
+    ref_std = lab_ref_masked.std(axis=0)
+
+    in_lab_normalized = (lab_in_masked - in_mean) / in_std
+    in_lab_transferred = in_lab_normalized * ref_std + ref_mean
+    
+    # safety clip
+    in_lab_transferred = np.clip(in_lab_transferred, 0, 255)
+
+    # put the pixel back in out image
+    lab_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2LAB).astype(np.float32)
+    if transfer_luminance:
+        lab_out[mask_in_bool] = in_lab_transferred
+    else:
+        lab_out[mask_in_bool, 1:3] = in_lab_transferred[:, 1:3]
+    lab_out = np.clip(lab_out, 0, 255).astype(np.uint8)
+
+    # back to RGB
+    img_out = cv2.cvtColor(lab_out, cv2.COLOR_LAB2RGB)
+
+    return img_out
+
+
+def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=1.0):
+    """
+    apply color transfer from img_ref to img_in
+    
+    :param img_in: RGB cv2 Image
+    :param img_ref: RGB cv2 Image
+    :param method: Method used
+    :param mask: List of 2 masks having the same dimensions than input images for skin color transfer correction
+    :return: input image with colors and gamma shifted
+    """
+    if method == "Reinhard":
+        img_out = match_lab_statistics(img_in, img_ref, color_space="LAB")
+    elif method == "Adobe":
+        img_out = adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, draw_transfer=True)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    # if skin mask provided, correct the output_img
+    if skin_mask:
+        if len(skin_mask) != 2:
+            raise ValueError(f"Mask must be of size 2, current size: {len(skin_mask)}")
+        if (skin_mask[0].shape[0:1] != img_in.shape[0:1]) or (skin_mask[1].shape[0:1] != img_ref.shape[0:1]):
+            raise ValueError("Mask shapes are not matching images shapes")
+
+        # correct
+        img_out = color_transfer_on_mask(img_in, img_ref, skin_mask[0], skin_mask[1], img_out, transfer_luminance=False)
+
+    # blending with input
+    if strength != 1.0:
+        if not (0 < strength <= 1.0):
+            raise ValueError(f" Strength parameter must be between 0 and 1, current value: {strength}")
+        img_out = (1 - strength) * img_in.astype(np.float32) + strength * img_out.astype(np.float32)
+        img_out = np.clip(img_out, 0, 255).astype(np.uint8)
+
+    # export LUT
+    # TODO
+
+    return img_out
