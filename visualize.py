@@ -219,12 +219,13 @@ def show_parades(img_reference, img_before, img_after) :
     axs[2].axis('off')
     
     plt.show()
+
 def plot_vectorscope(img):
     # small resize
     img_s = downscale_img(img, 512)
 
     # convert to YCbCr to extract any Y (luminance) information
-    img_YCbCr = cv2.cvtColor(img_s, cv2.COLOR_BGR2YCR_CB)
+    img_YCbCr = cv2.cvtColor(img_s, cv2.COLOR_RGB2YCR_CB)
 
     # extract chrominance info (Cb and Cr)
     Cb = img_YCbCr[:, :, 2].astype(float)
@@ -245,7 +246,7 @@ def plot_vectorscope(img):
     r = np.sqrt(cb_flat**2 + cr_flat**2)
     theta = np.atan2(cb_flat , cr_flat)
 
-    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(projection='polar'))
+    fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(projection='polar'))
 
 
     scatter = ax.scatter(theta, r, c=img_rgb,
@@ -264,8 +265,9 @@ def plot_vectorscope(img):
             ax.plot(u, v, 'o', color='black')
             ax.text(u, v, f" {color}", fontsize=10, color='blue')
 
-    plt.plot()
-    plt.show()
+    # plt.plot()
+    # plt.show()
+    return ax
 
 def plot_3D_RGB_scatter(img):
     img_s = downscale_img(img, 256)
