@@ -15,23 +15,12 @@ from lut_generation import *
 #to CIE XYZ tristimulus values
 # XYZ = colour.sRGB_to_XYZ(RGB)
 
-<<<<<<< HEAD
-#BGR = cv2.imread("img/licorice-pizza-src.jpg")
-# colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
-
-### VISUALIZE
-#plot_color_palette(BGR)
-# plot_vectorscope(BGR)
-# plot_3D_RGB_scatter(BGR)
-
-=======
 #BGR = cv2.imread("img/decision-to-leave.jpg")
 
 # colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
 
 ### VISUALIZE
 # plot_color_palette(BGR)
->>>>>>> 0350e2d6e4062eeb885eec44eac08713dde6fa10
 
 
 ### COLOR TRANSFER
