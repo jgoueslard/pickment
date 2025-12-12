@@ -15,6 +15,7 @@ from lut_generation import *
 #to CIE XYZ tristimulus values
 # XYZ = colour.sRGB_to_XYZ(RGB)
 
+<<<<<<< HEAD
 #BGR = cv2.imread("img/licorice-pizza-src.jpg")
 # colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
 
@@ -23,23 +24,30 @@ from lut_generation import *
 # plot_vectorscope(BGR)
 # plot_3D_RGB_scatter(BGR)
 
+=======
+#BGR = cv2.imread("img/decision-to-leave.jpg")
+
+# colour.plotting.plot_image(XYZ, text_kwargs={"text": "sRGB to XYZ"})
+
+### VISUALIZE
+# plot_color_palette(BGR)
+>>>>>>> 0350e2d6e4062eeb885eec44eac08713dde6fa10
 
 
 ### COLOR TRANSFER
-img_ref_bgr = cv2.imread("img/children-of-men-ref.png")
-img_src_bgr = cv2.imread("img/children-of-men-src.png")
+img_ref_bgr = cv2.imread("img/drive-ref.jpg")
+img_src_bgr = cv2.imread("img/drive-src.jpg")
 
 img_ref_rgb = cv2.cvtColor(img_ref_bgr, cv2.COLOR_BGR2RGB)
 img_src_rgb = cv2.cvtColor(img_src_bgr, cv2.COLOR_BGR2RGB)
 
 
-
-#img_out_rgb = lift_gain_gamma_correction(img_src_rgb, img_ref_rgb)
-#img_out_rgb = match_L_curve(img_out_rgb, img_ref_rgb)
+img_out_rgb_1 = lift_gain_gamma_correction(img_src_rgb, img_ref_rgb)
+img_out_rgb_1 = match_L_curve(img_out_rgb_1, img_ref_rgb)
 
 #img_out_rgb = full_tonning(img_src_rgb, img_ref_rgb)
 
-#img_out_rgb = color_transfer_ab(img_out_rgb, img_ref_rgb)
+img_out_rgb_1 = color_transfer_ab(img_out_rgb_1, img_ref_rgb)
 
 #img_out_rgb = hist_match(img_out_rgb, img_ref_rgb)
 
