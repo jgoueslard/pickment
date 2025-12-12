@@ -45,6 +45,7 @@ def generate_skin_mask(img):
     return skin_mask
 
 def skin_detection(img):
+    # code from https://github.com/CHEREF-Mehdi/SkinDetection
     img_HSV = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
     #skin color range for hsv color space 
