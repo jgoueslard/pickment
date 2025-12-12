@@ -305,3 +305,41 @@ def plot_transfer_curves(H_in_cdf, H_ref_cdf, transfer_function,
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_comparison(img_reference, img_before, img_after_1, img_after_2, img_after_3, img_after_4):
+    # create the figure
+    fig, axes = plt.subplots(3, 2, figsize=(6, 4))
+    
+    ax = axes[0,0]
+    ax.imshow(img_before)
+    ax.set_title('input')
+    ax.axis('off')
+
+    ax = axes[0,1]
+    ax.imshow(img_reference)
+    ax.set_title('reference')
+    ax.axis('off')
+
+    ax = axes[1,0]
+    ax.imshow(img_after_1)
+    ax.set_title('L+AB')
+    ax.axis('off')
+
+    ax = axes[1,1]
+    ax.imshow(img_after_2)
+    ax.set_title('Adobe')
+    ax.axis('off')
+
+    ax = axes[2,0]
+    ax.imshow(img_after_3)
+    ax.set_title('RGB Histogram')
+    ax.axis('off')
+
+    ax = axes[2,1]
+    ax.imshow(img_after_4)
+    ax.set_title('Iterative Rotatio')
+    ax.axis('off')
+
+    plt.tight_layout()
+    plt.show()

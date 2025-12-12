@@ -115,11 +115,8 @@ def hist_match(src, ref) :
 
 
 
-def random_rotation_matrix(dim=3):
-    """
-    Generate a random orthonormal rotation matrix (dim x dim).
-    """
-    A = np.random.normal(size=(dim, dim))
+def random_rotation_matrix():
+    A = np.random.normal(size=(3, 3))
     Q, R = np.linalg.qr(A)
     if np.linalg.det(Q) < 0:
         Q[:, 0] *= -1
@@ -137,32 +134,28 @@ def iterative_pdf_transfer(img_rgb_ref, img_rgb_src, n_iterations=10):
     Hs, Ws, _ = src.shape
     Hr, Wr, _ = ref.shape
 
-    # Flatten to N x 3 for linear algebra
     src_flat = src.reshape(-1, 3)
     ref_flat = ref.reshape(-1, 3)
 
     for _ in range(n_iterations):
-        # Random orthonormal basis
-        R = random_rotation_matrix(3)
+        R = random_rotation_matrix()
 
-        # Rotate both point clouds
         src_rot = src_flat @ R
         ref_rot = ref_flat @ R
 
-        # Match 1D distributions along each axis
-        for d in range(3):
-            src_channel = src_rot[:, d].reshape(Hs, Ws)
-            ref_channel = ref_rot[:, d].reshape(Hr, Wr)
+        for i in range(3):
+            src_channel = src_rot[:, i].reshape(Hs, Ws)
+            ref_channel = ref_rot[:, i].reshape(Hr, Wr)
 
             matched = match_histograms(src_channel, ref_channel)
-            src_rot[:, d] = matched.ravel()
+            src_rot[:, i] = matched.ravel()
 
-        # Back to original RGB space
         src_flat = src_rot @ R.T
+        ref_flat = ref_rot @ R.T
 
     out = src_flat.reshape(Hs, Ws, 3)
     out = np.clip(out, 0.0, 1.0)
 
-    out = (out * 255.0 + 0.5).astype(np.uint8)
+    out = (out * 255.0).astype(np.uint8)
     
     return out

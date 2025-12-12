@@ -1,25 +1,22 @@
-
 import cv2 as cv
 import numpy as np
 
 from sklearn.neighbors import KNeighborsRegressor
 
-import os
-
-
-def generate_lut(img_src, img_out, size=33, path="lut/default_lut.cube") : 
-    #r, g, b = np.split(img_src, axis=-1) 
-
+def generate_lut(img_src, img_out, size=33, path="lut/default_lut.cube") :
     img_src = img_src.astype(np.float32)
     img_out = img_out.astype(np.float32)
 
-    if img_src.max() > 1.0 or img_out.max() > 1.0:
+    if img_src.max() > 1.0:
         img_src /= 255.0
+
+    if img_out.max() > 1.0:
         img_out /= 255.0
 
     x = img_src.reshape(-1,3)
     y = img_out.reshape(-1,3)
 
+    # LUT interpolation
     knn = KNeighborsRegressor(10, weights="distance")
     knn.fit(x,y)
 
