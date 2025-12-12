@@ -62,11 +62,12 @@ def skin_detection(img):
     global_mask=cv2.medianBlur(global_mask,3)
     global_mask = cv2.morphologyEx(global_mask, cv2.MORPH_OPEN, np.ones((4,4), np.uint8))
 
-
-    HSV_result = cv2.bitwise_not(HSV_mask)
-    YCrCb_result = cv2.bitwise_not(YCrCb_mask)
     global_result=global_mask
     return global_result
+
+def load_sam2_mask(img):
+    mask = np.where(img == [0, 255, 0], img, [0,0,0])
+    return mask[:,:,1]
 
 def display_mask_comparison(img, skin_mask, title="Skin Segmentation"):
     """Display side-by-side comparison"""

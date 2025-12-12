@@ -187,7 +187,7 @@ def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overla
     return img_out
 
 
-def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer_luminance=False):
+def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer_luminance=False, blend=1.0):
     """
     Docstring for correct_skin_tones
     
@@ -226,9 +226,9 @@ def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer
     # put the pixel back in out image
     lab_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2LAB).astype(np.float32)
     if transfer_luminance:
-        lab_out[mask_in_bool] = in_lab_transferred
+        lab_out[mask_in_bool] = blend * in_lab_transferred + (1 - blend) * lab_out[mask_in_bool]
     else:
-        lab_out[mask_in_bool, 1:3] = in_lab_transferred[:, 1:3]
+        lab_out[mask_in_bool, 1:3] = blend * in_lab_transferred[:, 1:3] + (1 - blend) * lab_out[mask_in_bool, 1:3]
     lab_out = np.clip(lab_out, 0, 255).astype(np.uint8)
 
     # back to RGB
@@ -237,7 +237,7 @@ def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer
     return img_out
 
 
-def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=1.0):
+def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=1.0, skin_mask_blend=1.0):
     """
     apply color transfer from img_ref to img_in
     
@@ -262,7 +262,7 @@ def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=
             raise ValueError("Mask shapes are not matching images shapes")
 
         # correct
-        img_out = color_transfer_on_mask(img_in, img_ref, skin_mask[0], skin_mask[1], img_out, transfer_luminance=False)
+        img_out = color_transfer_on_mask(img_in, img_ref, skin_mask[0], skin_mask[1], img_out, transfer_luminance=False, blend=skin_mask_blend)
 
     # blending with input
     if strength != 1.0:

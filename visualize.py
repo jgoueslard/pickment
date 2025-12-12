@@ -194,9 +194,9 @@ def RGB_parade(img) :
     all_plt_color_scope = cv2.merge((r_color_scope, g_color_scope, b_color_scope))
 
     return all_plt_color_scope
-    plt.imshow(all_plt_color_scope)
-    plt.title('All Color Scope'), plt.xticks([]), plt.yticks([])
-    plt.show()
+    # plt.imshow(all_plt_color_scope)
+    # plt.title('All Color Scope'), plt.xticks([]), plt.yticks([])
+    # plt.show()
 
 
 def show_parades(img_reference, img_before, img_after) :
