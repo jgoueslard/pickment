@@ -38,18 +38,21 @@ img_out_rgb_1 = match_L_curve(img_out_rgb_1, img_ref_rgb)
 
 img_out_rgb_1 = color_transfer_ab(img_out_rgb_1, img_ref_rgb)
 
-img_out_rgb_2 = adobe_color_transfer(img_src_rgb, img_ref_rgb, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, color_space="LAB")[0]
+#img_out_rgb = hist_match(img_out_rgb, img_ref_rgb)
 
-img_out_rgb_3 = hist_match(img_src_rgb, img_ref_rgb)
-#img_out_rgb = neumann_color_transfer(img_src_rgb, img_ref_rgb)
+#img_out_rgb = iterative_pdf_transfer(img_ref_rgb, img_src_rgb, n_iterations=10)
 
-img_out_rgb_4 = iterative_pdf_transfer(img_ref_rgb, img_src_rgb, n_iterations=20)
+#skin_mask_src = generate_skin_mask(img_src_rgb)
+#skin_mask_ref = generate_skin_mask(img_ref_rgb)
 
-#plot_before_after(img_ref_rgb, img_src_rgb, img_out_rgb_4)
-plot_comparison(img_ref_rgb, img_src_rgb, img_out_rgb_1, img_out_rgb_2, img_out_rgb_3, img_out_rgb_4)
+#masks = [skin_mask_src, skin_mask_ref]
+
+img_out_rgb = color_transfer(img_src_rgb, img_ref_rgb, method="Blend")
+
+plot_before_after(img_ref_rgb, img_src_rgb, img_out_rgb)
 
 #show_histograms(img_ref_rgb, img_src_rgb, img_out_rgb)
 
 #show_parades(img_ref_rgb, img_src_rgb, img_out_rgb)
 
-#generate_lut(img_src_rgb, img_out_rgb, path="lut/com_it.cube")
+#generate_lut(img_src_rgb, img_out_rgb, path="lut/ame3.cube")

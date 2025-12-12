@@ -72,15 +72,14 @@ def lift_gain_gamma_correction(img_src, img_ref) :
 
 
 def match_L_curve(src_rgb, ref_rgb, knots=(1,5,10,20,35,50,65,80,90,95,99)):
-    
     src_lab_u8 = cv.cvtColor(src_rgb, cv.COLOR_RGB2LAB)
     ref_lab_u8 = cv.cvtColor(ref_rgb, cv.COLOR_RGB2LAB)
 
     Ls = src_lab_u8[..., 0].astype(np.float32).ravel()
     Lr = ref_lab_u8[..., 0].astype(np.float32).ravel()
 
-    ps = np.percentile(Ls, knots).astype(np.float32)  
-    pr = np.percentile(Lr, knots).astype(np.float32) 
+    ps = np.percentile(Ls, knots).astype(np.float32) 
+    pr = np.percentile(Lr, knots).astype(np.float32)  
 
     for i in range(1, len(ps)):
         if ps[i] <= ps[i-1]:
