@@ -72,37 +72,26 @@ def lift_gain_gamma_correction(img_src, img_ref) :
 
 
 def match_L_curve(src_rgb, ref_rgb, knots=(1,5,10,20,35,50,65,80,90,95,99)):
-    """
-    src_rgb, ref_rgb: uint8 RGB (not BGR!)
-    Returns: uint8 RGB with L matched to reference using a monotone spline (PCHIP).
-    """
 
-    # 1) Convert to Lab as uint8 (OpenCV encoding: L,a,b in 0..255, a/b centered at 128)
     src_lab_u8 = cv.cvtColor(src_rgb, cv.COLOR_RGB2LAB)
     ref_lab_u8 = cv.cvtColor(ref_rgb, cv.COLOR_RGB2LAB)
 
-    # 2) Work on L channel in 0..255 space
     Ls = src_lab_u8[..., 0].astype(np.float32).ravel()
     Lr = ref_lab_u8[..., 0].astype(np.float32).ravel()
 
-    # 3) Percentile knots
-    ps = np.percentile(Ls, knots).astype(np.float32)  # x
-    pr = np.percentile(Lr, knots).astype(np.float32)  # y
+    ps = np.percentile(Ls, knots).astype(np.float32) 
+    pr = np.percentile(Lr, knots).astype(np.float32)  
 
-    # 4) Ensure strictly increasing x for PCHIP (handle flats)
     for i in range(1, len(ps)):
         if ps[i] <= ps[i-1]:
             ps[i] = ps[i-1] + 1e-3
 
-    # 5) Build monotone spline and remap L
     f = PchipInterpolator(ps, pr, extrapolate=True)
     L_src = src_lab_u8[..., 0].astype(np.float32)
     L_out = np.clip(f(L_src), 0, 255).astype(np.uint8)
 
-    # 6) Put L back (keep a,b unchanged), still uint8 Lab
     out_lab_u8 = src_lab_u8.copy()
     out_lab_u8[..., 0] = L_out
 
-    # 7) Convert back to RGB (uint8→uint8)
     out_rgb = cv.cvtColor(out_lab_u8, cv.COLOR_LAB2RGB)
     return out_rgb

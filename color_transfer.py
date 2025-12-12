@@ -4,6 +4,15 @@ import scipy.ndimage as ndimage
 from util import *
 from visualize import plot_transfer_curves
 
+
+from color_correction import *
+from tone_adjustment import *
+
+from color_transfer import *
+from color_transfer_reinhart import *
+from histogram_matching import *
+
+
 def match_lab_statistics(img_in, img_ref, color_space="LAB"):
     # convert to proper colorspace
     if color_space == "LAB":
@@ -187,7 +196,7 @@ def adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overla
     return img_out
 
 
-def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer_luminance=False, blend=1.0):
+def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer_luminance=False):
     """
     Docstring for correct_skin_tones
     
@@ -226,9 +235,9 @@ def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer
     # put the pixel back in out image
     lab_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2LAB).astype(np.float32)
     if transfer_luminance:
-        lab_out[mask_in_bool] = blend * in_lab_transferred + (1 - blend) * lab_out[mask_in_bool]
+        lab_out[mask_in_bool] = in_lab_transferred
     else:
-        lab_out[mask_in_bool, 1:3] = blend * in_lab_transferred[:, 1:3] + (1 - blend) * lab_out[mask_in_bool, 1:3]
+        lab_out[mask_in_bool, 1:3] = in_lab_transferred[:, 1:3]
     lab_out = np.clip(lab_out, 0, 255).astype(np.uint8)
 
     # back to RGB
@@ -237,7 +246,7 @@ def color_transfer_on_mask(img_in, img_ref, mask_in, mask_ref, img_out, transfer
     return img_out
 
 
-def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=1.0, skin_mask_blend=1.0):
+def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=1.0):
     """
     apply color transfer from img_ref to img_in
     
@@ -249,8 +258,28 @@ def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=
     """
     if method == "Reinhard":
         img_out = match_lab_statistics(img_in, img_ref, color_space="LAB")
+    elif method == "LGG+Lcurve+AB" :
+        img_out = lift_gain_gamma_correction(img_in, img_ref)
+        img_out = match_L_curve(img_out, img_ref)
+        img_out = color_transfer_ab(img_out, img_ref)
     elif method == "Adobe":
-        img_out = adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, draw_transfer=True)
+        img_out = adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, draw_transfer=False)
+    elif method == "RGB Histogram" :
+        img_out = hist_match(img_in, img_ref)
+    elif method == "Iterative PDF" :
+        img_out = iterative_pdf_transfer(img_ref, img_in, n_iterations=10)
+    elif method == "Blend" :
+        img_out_lgg = lift_gain_gamma_correction(img_in, img_ref)
+        img_out_lgg = match_L_curve(img_out_lgg, img_ref)
+        img_out_lgg = color_transfer_ab(img_out_lgg, img_ref)
+        img_out_ado = adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, draw_transfer=False)
+        img_out_pdf = iterative_pdf_transfer(img_ref, img_in, n_iterations=20)
+        
+        print(img_out_lgg)
+        print(img_out_ado)
+        print(img_out_pdf)
+        
+        img_out = np.clip(0.25 * img_out_lgg + 0.25 * img_out_ado + 0.5 * img_out_pdf, 0, 255).astype(np.uint8)   
     else:
         raise ValueError(f"Unknown method: {method}")
 
@@ -262,7 +291,7 @@ def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=
             raise ValueError("Mask shapes are not matching images shapes")
 
         # correct
-        img_out = color_transfer_on_mask(img_in, img_ref, skin_mask[0], skin_mask[1], img_out, transfer_luminance=False, blend=skin_mask_blend)
+        img_out = color_transfer_on_mask(img_in, img_ref, skin_mask[0], skin_mask[1], img_out, transfer_luminance=False)
 
     # blending with input
     if strength != 1.0:
