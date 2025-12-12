@@ -9,18 +9,18 @@ def downscale_img(img, max_pix):
     return cv2.resize(img, dsize=(int(w*scale), int(h*scale)), interpolation=cv2.INTER_AREA)
 
 def generate_skin_mask(img):
-    """Fallback: Generate skin mask using DeepLabV3 (simpler for macOS)"""
+    """generate skin mask using the deeplabv3 method available directly in Pytorch"""
     import torchvision.transforms as transforms
     from torchvision.models.segmentation import deeplabv3_resnet50
     
     device = torch.device("cpu")
     
-    # Load model
+    # load model
     model = deeplabv3_resnet50(pretrained=True)
     model = model.to(device)
     model.eval()
     
-    # Preprocess
+    # preprocess
     img_resized = cv2.resize(img, (512, 512))
     
     transform = transforms.Compose([

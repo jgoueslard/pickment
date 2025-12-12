@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 
+# Color transfer using the HSV H and S values and match the tones of the 2 images
 
 
 def find_avgsat(saturation) :
@@ -50,21 +51,17 @@ def tone_adjustment(h, s, v, h_ref, s_ref, v_ref, v_max, v_min) :
    return saturation, hue
 
 def trial_tonning_adjustment(h,s,v, h_ref,s_ref,v_ref) :
-
-   print("shadows")
    s, h = tone_adjustment(h, s, v, h_ref, s_ref, v_ref, 150, 0)
-   print("mid") 
+
    s, h = tone_adjustment(h, s, v, h_ref, s_ref, v_ref, 180, 90)
-   print("highlights")
+
    s, h = tone_adjustment(h, s, v, h_ref, s_ref, v_ref, 255, 180) 
 
    return s, h
 
 def dual_tonning_adjustment(h,s,v, h_ref,s_ref,v_ref) :
-
-   print("shadows")
    s, h = tone_adjustment(h, s, v, h_ref, s_ref, v_ref, 75, 0)
-   print("highlights")
+
    s, h = tone_adjustment(h, s, v, h_ref, s_ref, v_ref, 255, 175) 
 
    return s, h
