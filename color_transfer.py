@@ -275,10 +275,6 @@ def color_transfer(img_in, img_ref, method="Reinhard", skin_mask=None, strength=
         img_out_ado = adobe_color_transfer(img_in, img_ref, smooth_luminance_transfer=0.01, overlap_split_tone=0.1, draw_transfer=False)
         img_out_pdf = iterative_pdf_transfer(img_ref, img_in, n_iterations=20)
         
-        print(img_out_lgg)
-        print(img_out_ado)
-        print(img_out_pdf)
-        
         img_out = np.clip(0.25 * img_out_lgg + 0.25 * img_out_ado + 0.5 * img_out_pdf, 0, 255).astype(np.uint8)   
     else:
         raise ValueError(f"Unknown method: {method}")
