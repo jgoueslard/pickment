@@ -10,7 +10,6 @@ colour.plotting.colour_style()
 from util import *
 
 def plot_color_palette(img, n_colors=8, swatch_h=80):
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # small resize
         img_s = downscale_img(img, 512)
@@ -40,14 +39,15 @@ def plot_color_palette(img, n_colors=8, swatch_h=80):
             background[0:swatch_h, x0:x0+block_w, :] = c
 
         # show
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), constrained_layout=True)
-        ax1.imshow(img_rgb)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 3), constrained_layout=True)
+        ax1.imshow(img)
         ax1.axis('off')
         ax2.imshow(background)
         ax2.axis('off')
         plt.show()
 
-        return colors, percents, background
+        # return colors, percents, background
+
 
 def plot_before_after(img_reference, img_before, img_after):
     # create the figure
@@ -72,8 +72,6 @@ def plot_before_after(img_reference, img_before, img_after):
     plt.show()
 
 
-
-
 def show_histograms(img_reference, img_before, img_after):
     
     img_before_gray = cv2.cvtColor(img_before, cv2.COLOR_RGB2GRAY)
@@ -96,56 +94,6 @@ def show_histograms(img_reference, img_before, img_after):
 
     plt.show()
 
-
-
-
-# def RGB_parade(image, bins=100, empty_rows=6):
-#     RGB = colour.utilities.zeros([bins, image.shape[1], 3])
-#     for C in [0, 1, 2]:
-#         for Y in range(image.shape[1]):
-#             H, _edges = np.histogram(image[..., Y, C], bins, range=(0, 1))
-#             RGB[..., Y, C] = H / np.max(H)
-
-#     B = empty_rows
-#     RGB_e = colour.utilities.zeros([RGB.shape[0] * B, RGB.shape[1], 3])
-#     RGB_e[::B, ...] = RGB
-
-#     RGB_e = colour.utilities.orient(RGB_e, 'Flop')
-
-#     return RGB_e
-
-
-
-# def show_parades(img_reference, img_before, img_after) :
-
-#     image_before = colour.cctf_decoding(img_before.astype(np.float32) / 255.0)
-#     image_reference = colour.cctf_decoding(img_reference.astype(np.float32) / 255.0)
-#     image_after = colour.cctf_decoding(img_after.astype(np.float32) / 255.0)
-
-#     parade_before = colour.cctf_encoding(RGB_parade(image_before))
-#     parade_reference = colour.cctf_encoding(RGB_parade(image_reference))
-#     parade_after = colour.cctf_encoding(RGB_parade(image_after))
-
-#     fig, axs = plt.subplots(1, 3, figsize=(18, 6))
-
-#     axs[0].imshow(parade_before, interpolation='bicubic')
-#     axs[0].set_title("input")
-#     axs[0].axis('off')
-#     axs[0].set_aspect('equal', adjustable='box')
-
-#     axs[1].imshow(parade_reference, interpolation='bicubic')
-#     axs[1].set_title("reference")
-#     axs[1].axis('off')
-#     axs[1].set_aspect('equal', adjustable='box')
-
-#     axs[2].imshow(parade_after, interpolation='bicubic')
-#     axs[2].set_title("output")
-#     axs[2].axis('off')
-#     axs[2].set_aspect('equal', adjustable='box')
-
-#     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.05)
-
-#     plt.show()
 
 def RGB_parade(img) :
 
@@ -220,6 +168,7 @@ def show_parades(img_reference, img_before, img_after) :
     
     plt.show()
 
+
 def plot_vectorscope(img):
     # small resize
     img_s = downscale_img(img, 512)
@@ -269,11 +218,13 @@ def plot_vectorscope(img):
     # plt.show()
     return ax
 
+
 def plot_3D_RGB_scatter(img):
     img_s = downscale_img(img, 256)
 
     img_rgb = cv2.cvtColor(img_s, cv2.COLOR_BGR2RGB).reshape(-1,3) / 255.0
     colour.plotting.plot_RGB_scatter(img_rgb, "ITU-R BT.709")
+
 
 def plot_transfer_curves(H_in_cdf, H_ref_cdf, transfer_function,
                          figsize=(10, 6), title_prefix=""):
